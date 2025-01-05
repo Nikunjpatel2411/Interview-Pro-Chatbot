@@ -136,6 +136,5 @@ def main():
         This chatbot assists users in preparing for job interviews by providing tips, answering common questions, 
         and offering advice. It utilizes NLP, machine learning, and multilingual support for an interactive experience.
         """)
-
 if __name__ == '__main__':
     main()

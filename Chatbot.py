@@ -5,7 +5,6 @@ import ssl
 import nltk
 import streamlit as st
 from gtts import gTTS
-import tempfile
 import playsound
 import speech_recognition as sr
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -80,46 +79,45 @@ def chatbot(input_text, user_lang):
 
 # Voice Output
 def speak_response(response):
-    # Create a custom temporary directory with appropriate permissions
     temp_dir = os.path.join(os.getcwd(), 'temp_audio')
     if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)  # Create the directory if it doesn't exist
+        os.makedirs(temp_dir)
 
-    # Create the temporary audio file path in the custom directory
     temp_audio_path = os.path.join(temp_dir, "response.mp3")
 
     try:
-        # Generate speech and save to the specified file
         tts = gTTS(response)
         tts.save(temp_audio_path)
-
-        # Play the sound
         playsound.playsound(temp_audio_path)
-
-        # Optionally delete the file after playback
         os.remove(temp_audio_path)
-
     except Exception as e:
         print(f"Error during speech synthesis or playback: {str(e)}")
 
 
 # Speech Input using SpeechRecognition
 def listen_to_user():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("Listening...")
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
-        try:
-            user_input = recognizer.recognize_google(audio)
-            st.success(f"You said: {user_input}")
-            return user_input
-        except sr.UnknownValueError:
-            st.error("Sorry, I did not understand that.")
-            return None
-        except sr.RequestError as e:
-            st.error(f"Error with the speech recognition service: {e}")
-            return None
+    try:
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            st.info("Listening...")
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source)
+            try:
+                user_input = recognizer.recognize_google(audio)
+                st.success(f"You said: {user_input}")
+                return user_input
+            except sr.UnknownValueError:
+                st.error("Sorry, I did not understand that.")
+                return None
+            except sr.RequestError as e:
+                st.error(f"Error with the speech recognition service: {e}")
+                return None
+    except AttributeError as e:
+        if "PyAudio" in str(e):
+            st.warning("This feature is unavailable because PyAudio is not installed. Please check your setup.")
+        else:
+            st.error(f"An unexpected error occurred: {e}")
+        return None
 
 
 # Main Application
@@ -162,7 +160,8 @@ def main():
             user_input = st.text_input("Type your message or click the mic to speak:", key="user_input_home",
                                        label_visibility="collapsed")
         with col2:
-            if st.button("Speak", use_container_width=True):
+            speak_button = st.button("Speak", use_container_width=True, disabled=False)
+            if speak_button:
                 user_input = listen_to_user()  # Capture voice input when the user clicks the "Speak" button
                 if user_input:
                     st.session_state.chat_log.append({"sender": "user", "message": user_input})

@@ -1,4 +1,4 @@
-# Job Interview Preparation Chatbot 🤖💼
+# Interview Pro Chatbot 🤖💼
 
 The Job Interview Preparation Chatbot is designed to assist users in preparing for job interviews. By leveraging Natural Language Processing (NLP) and machine learning techniques, this chatbot provides relevant responses to common interview questions, tips for job seekers, and guidance for effective interview preparation.
 

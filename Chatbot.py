@@ -4,9 +4,6 @@ import random
 import ssl
 import nltk
 import streamlit as st
-from gtts import gTTS
-import playsound
-import speech_recognition as sr
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from googletrans import Translator
@@ -44,7 +41,6 @@ y = tags
 clf = LogisticRegression(random_state=0, max_iter=10000)
 clf.fit(X, y)
 
-
 # Format response
 def format_response(intent):
     response = random.choice(intent['responses'])
@@ -58,7 +54,6 @@ def format_response(intent):
             resources = "\n".join([f"{res['topic']}: {res['url']}" for res in intent['additional_info']['resources']])
             response += f"\n\nResources:\n{resources}"
     return response
-
 
 # Chatbot Response
 def chatbot(input_text, user_lang):
@@ -75,50 +70,6 @@ def chatbot(input_text, user_lang):
 
     except Exception as e:
         return f"I couldn't process your request. Please try again. ({str(e)})"
-
-
-# Voice Output
-def speak_response(response):
-    temp_dir = os.path.join(os.getcwd(), 'temp_audio')
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-
-    temp_audio_path = os.path.join(temp_dir, "response.mp3")
-
-    try:
-        tts = gTTS(response)
-        tts.save(temp_audio_path)
-        playsound.playsound(temp_audio_path)
-        os.remove(temp_audio_path)
-    except Exception as e:
-        print(f"Error during speech synthesis or playback: {str(e)}")
-
-
-# Speech Input using SpeechRecognition
-def listen_to_user():
-    try:
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
-            st.info("Listening...")
-            recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source)
-            try:
-                user_input = recognizer.recognize_google(audio)
-                st.success(f"You said: {user_input}")
-                return user_input
-            except sr.UnknownValueError:
-                st.error("Sorry, I did not understand that.")
-                return None
-            except sr.RequestError as e:
-                st.error(f"Error with the speech recognition service: {e}")
-                return None
-    except AttributeError as e:
-        if "PyAudio" in str(e):
-            st.warning("This feature is unavailable because PyAudio is not installed. Please check your setup.")
-        else:
-            st.error(f"An unexpected error occurred: {e}")
-        return None
-
 
 # Main Application
 def main():
@@ -157,23 +108,16 @@ def main():
 
         col1, col2 = st.columns([8, 2])
         with col1:
-            user_input = st.text_input("Type your message or click the mic to speak:", key="user_input_home",
-                                       label_visibility="collapsed")
+            user_input = st.text_input("Type your message:", key="user_input_home", label_visibility="collapsed")
         with col2:
-            speak_button = st.button("Speak", use_container_width=True, disabled=False)
-            if speak_button:
-                user_input = listen_to_user()  # Capture voice input when the user clicks the "Speak" button
-                if user_input:
-                    st.session_state.chat_log.append({"sender": "user", "message": user_input})
-                    response = chatbot(user_input, user_lang_code)
-                    st.session_state.chat_log.append({"sender": "bot", "message": response})
-                    speak_response(response)
+            if st.button("Speak"):
+                # Display an error message when the button is clicked
+                st.error("Features are temporarily unavailable.")
 
         if user_input:
             st.session_state.chat_log.append({"sender": "user", "message": user_input})
             response = chatbot(user_input, user_lang_code)
             st.session_state.chat_log.append({"sender": "bot", "message": response})
-            speak_response(response)
 
     elif choice == "Conversation History":
         st.title("Conversation History")
@@ -192,7 +136,6 @@ def main():
         This chatbot assists users in preparing for job interviews by providing tips, answering common questions, 
         and offering advice. It utilizes NLP, machine learning, and multilingual support for an interactive experience.
         """)
-
 
 if __name__ == '__main__':
     main()

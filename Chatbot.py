@@ -71,14 +71,23 @@ def chatbot(input_text, user_lang):
     except Exception as e:
         return f"I couldn't process your request. Please try again. ({str(e)})"
 
+
+# Main Application
 # Main Application
 def main():
     st.sidebar.image("chatbot_logo.png", width=150)
     menu_options = ["Home", "Conversation History", "About"]
     choice = st.sidebar.radio("Menu", menu_options)
 
+    # Initialize session state variables
     if "chat_log" not in st.session_state:
         st.session_state.chat_log = []
+
+    if "user_input" not in st.session_state:
+        st.session_state.user_input = ""  # Temporary input storage
+
+    if "process_input" not in st.session_state:
+        st.session_state.process_input = False  # Flag to process input
 
     # Home Section
     if choice == "Home":
@@ -96,6 +105,7 @@ def main():
         user_lang = st.sidebar.selectbox("Choose your language:", list(language_options.keys()))
         user_lang_code = language_options[user_lang]
 
+        # Display chat log
         for chat in st.session_state.chat_log:
             if chat['sender'] == 'user':
                 st.markdown(
@@ -106,18 +116,41 @@ def main():
                     f"<div style='padding:10px; background-color:#E5E5E5; border-radius:10px;color:#020500; margin-bottom:5px;'><B>Bot:</B> {chat['message']}</div>",
                     unsafe_allow_html=True)
 
+        # Input section
         col1, col2 = st.columns([8, 2])
         with col1:
-            user_input = st.text_input("Type your message:", key="user_input_home", label_visibility="collapsed")
+            # Input field
+            user_input = st.text_input(
+                "Type your message:",
+                value=st.session_state.user_input,
+                key="user_input_home",
+                label_visibility="collapsed"
+            )
         with col2:
             if st.button("Speak"):
-                # Display an error message when the button is clicked
                 st.error("Features are temporarily unavailable.")
 
-        if user_input:
-            st.session_state.chat_log.append({"sender": "user", "message": user_input})
-            response = chatbot(user_input, user_lang_code)
+        # Check if input is provided
+        if user_input and not st.session_state.process_input:
+            st.session_state.user_input = user_input  # Save user input
+            st.session_state.process_input = True  # Set flag to process input
+            st.experimental_rerun()  # Rerun the app to handle input
+
+        # Process input after rerun
+        if st.session_state.process_input:
+            # Add user's message to the chat log
+            st.session_state.chat_log.append({"sender": "user", "message": st.session_state.user_input})
+
+            # Generate bot response
+            response = chatbot(st.session_state.user_input, user_lang_code)
+
+            # Add bot's response to the chat log
             st.session_state.chat_log.append({"sender": "bot", "message": response})
+
+            # Clear the input and reset flags
+            st.session_state.user_input = ""  # Clear the input field
+            st.session_state.process_input = False  # Reset processing flag
+            st.experimental_rerun()  # Rerun to reflect cleared input
 
     elif choice == "Conversation History":
         st.title("Conversation History")
@@ -136,5 +169,11 @@ def main():
         This chatbot assists users in preparing for job interviews by providing tips, answering common questions, 
         and offering advice. It utilizes NLP, machine learning, and multilingual support for an interactive experience.
         """)
+
+
 if __name__ == '__main__':
     main()
+
+
+
+

@@ -170,7 +170,6 @@ def main():
         and offering advice. It utilizes NLP, machine learning, and multilingual support for an interactive experience.
         """)
 
-
 if __name__ == '__main__':
     main()
 

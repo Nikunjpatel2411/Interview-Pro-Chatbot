@@ -73,6 +73,8 @@ def chatbot(input_text, user_lang):
 
 
 # Main Application
+
+
 # Main Application
 def main():
     st.sidebar.image("chatbot_logo.png", width=150)
@@ -165,10 +167,16 @@ def main():
 
     elif choice == "About":
         st.title("About the Chatbot")
-        st.write("""
-        This chatbot assists users in preparing for job interviews by providing tips, answering common questions, 
-        and offering advice. It utilizes NLP, machine learning, and multilingual support for an interactive experience.
-        """)
+
+        # Display link to README file
+        readme_file_path = "README.md"
+        if os.path.exists(readme_file_path):
+            with open(readme_file_path, "r") as file:
+                readme_content = file.read()
+            # Render the content of the README file
+            st.markdown(readme_content)
+        else:
+            st.write("README.md file not found.")
 
 if __name__ == '__main__':
     main()
